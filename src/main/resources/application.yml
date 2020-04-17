@@ -1,0 +1,212 @@
+
+spring:
+  profiles:
+    active: local
+
+  application:
+    name: skack24h snack24h
+
+  http:
+    log-request-details: false
+
+  servlet:
+    multipart:
+      max-file-size: 30MB
+      max-request-size: 30MB
+
+server:
+  port: 7080
+
+logging:
+  pattern:
+    console: "%d %-5level %logger : %msg%n"
+    file: "%d %-5level [%thread] %logger : %msg%n"
+  level:
+    root: ERROR
+
+---
+###################### Begin Of local profile ########################
+spring:
+  profiles: local
+
+  jpa:
+    properties:
+      org:
+        hibernate:
+          envers:
+            audit_table_suffix: _aud
+    show-sql: true
+
+  thymeleaf:
+    prefix: file:src/main/resources/templates/
+    cache: false
+
+  # Static resources reloading during development
+  resources:
+    static-locations: file:src/main/resources/static/
+    cache:
+      period: 0
+
+  devtools:
+    restart:
+      enabled: true
+    livereload:
+      enabled: true
+
+logging:
+  level:
+    org.springframework.web: DEBUG
+    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
+    org.hibernate: INFO
+#    org.hibernate.SQL: DEBUG
+    org.hibernate.type: TRACE
+    org.hibernate.type.EnumType: INFO
+    org.hibernate.type.descriptor.sql.BasicExtractor: INFO # ResultSet 결과 출력 로그 너무 많아서 막아두었습니다. TRACE level에서 로깅
+    org.hibernate.engine.internal: WARN
+    com.snack24h: TRACE
+    com.zaxxer.hikari: DEBUG
+
+office:
+  hostname: http://localhost:7080
+
+aws:
+  s3:
+    hostname:
+      web: https://dev.cdn.snack24h.snack24h.com/
+    bucket:
+      web: snack24h-snack24h-web-dev
+      docs: snack24h-snack24h-docs-dev
+
+fileupload:
+  path:
+    temp: /tmp
+
+app:
+  datasource:
+    ## Portal
+    snack24h:
+      type: com.zaxxer.hikari.HikariDataSource
+      jdbcUrl: jdbc:mysql://wefun-dev.cwogpqnsmkxd.ap-northeast-2.rds.amazonaws.com:3306/portal_office?useUnicode=true&characterEncoding=utf8
+      username: local_app
+#      jdbcUrl: jdbc:mysql://127.0.0.1:13306/portal_office?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC
+#      username: prod_user
+      password: wefun2020!!
+      driverClassName: com.mysql.cj.jdbc.Driver
+      initializationMode: always
+      sqlScriptEncoding: UTF-8
+
+      maximumPoolSize: 20 # 유휴 상태와 사용중인 커넥션을 포함해서 풀이 허용하는 최대 커넥션 개수
+      minimum-idle: 5 # 풀에 유지할 유휴 커넥션의 최소 개수, 설정하지 않을 경우 maximum-pool-size 와 동일
+      idleTimeout: 300000 # 5분, 커넥션이 풀에서 유휴 상태로 남을 수 있는 최대 시간을 밀리초 단위로 지정
+      connectionTimeout: 5000 #5초, 풀에서 커넥션을 구할 때 대기 시간을 밀리초 단위로 지정
+      maxLifetime: 1200000 # 20분, 커넥션의 최대 유지 시간을 밀리초 단위로 설정한다. 이 시간이 지난 커넥션 중에서 사용중인 커넥션은 종료된 이후에 풀에서 제거한다.
+
+  hibernate:
+
+    ## Portal
+    snack24h:
+      physical_naming_strategy: com.snack24h.snack24h.config.PhysicalNamingStrategyImpl
+      hbm2ddl:
+        auto: none
+      dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+      cache:
+        use_second_level_cache: false
+        use_query_cache: false
+      generate_statistics: true
+      format_sql: true
+      id:
+        new_generator_mappings: true
+
+###################### End Of local profile ########################
+---
+###################### Begin Of production profile ########################
+
+spring:
+  profiles: production
+
+  jpa:
+    properties:
+      org:
+        hibernate:
+          envers:
+            audit_table_suffix: _aud
+    show-sql: true
+
+logging:
+  level:
+    org.springframework.web: DEBUG
+    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
+    org.hibernate: INFO
+    #    org.hibernate.SQL: DEBUG
+    org.hibernate.type: TRACE
+    org.hibernate.type.EnumType: INFO
+    org.hibernate.type.descriptor.sql.BasicExtractor: INFO # ResultSet 결과 출력 로그 너무 많아서 막아두었습니다. TRACE level에서 로깅
+    org.hibernate.engine.internal: WARN
+    com.snack24h: TRACE
+    com.zaxxer.hikari: DEBUG
+  file:
+    name: "/home/ec2-user/app/portal.log"
+
+office:
+  hostname: https://snack24h.com
+
+aws:
+  s3:
+    hostname:
+      web: https://dev.cdn.snack24h.com/
+    bucket:
+      web: snack24h-snack24h-web-dev
+      docs: snack24h-snack24h-docs-dev
+
+fileupload:
+  path:
+    temp: /home/ec2-user/fileupload
+
+payment:
+  payple:
+    id: wefun123
+    key: eb45d964e2ac87e442b9489376882494526133f2e80a26e0de76433823fa7363
+    host: https://cpay.payple.kr/js/cpay.payple.1.0.1.js
+    url:
+      auth: https://cpay.payple.kr/php/auth.php
+      paycheck: https://cpay.payple.kr/php/PayChkAct.php
+
+path:
+  pdffont: /home/ec2-user/app/font
+  wefunstamp: /home/ec2-user/app/font/wefun_stamp.png
+
+app:
+  datasource:
+    ## Portal
+    snack24h:
+      type: com.zaxxer.hikari.HikariDataSource
+      jdbcUrl: jdbc:mysql://wefun-production.cwogpqnsmkxd.ap-northeast-2.rds.amazonaws.com:3306/portal_office?useUnicode=true&characterEncoding=utf8
+      username: prod_user
+      password: wefun2020!!
+      driverClassName: com.mysql.cj.jdbc.Driver
+      initializationMode: always
+      sqlScriptEncoding: UTF-8
+
+      maximumPoolSize: 200 # 유휴 상태와 사용중인 커넥션을 포함해서 풀이 허용하는 최대 커넥션 개수
+      minimum-idle: 10 # 풀에 유지할 유휴 커넥션의 최소 개수, 설정하지 않을 경우 maximum-pool-size 와 동일
+      idleTimeout: 300000 # 5분, 커넥션이 풀에서 유휴 상태로 남을 수 있는 최대 시간을 밀리초 단위로 지정
+      connectionTimeout: 10000 #10초, 풀에서 커넥션을 구할 때 대기 시간을 밀리초 단위로 지정
+      maxLifetime: 1200000 # 20분, 커넥션의 최대 유지 시간을 밀리초 단위로 설정한다. 이 시간이 지난 커넥션 중에서 사용중인 커넥션은 종료된 이후에 풀에서 제거한다.
+
+  hibernate:
+    ## Portal
+    snack24h:
+      physical_naming_strategy: com.snack24h.snack24h.config.PhysicalNamingStrategyImpl
+      hbm2ddl:
+        auto: update
+      dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+      cache:
+        use_second_level_cache: false
+        use_query_cache: false
+      generate_statistics: true
+      format_sql: true
+      id:
+        new_generator_mappings: true
+
+
+###################### End Of production profile ########################
